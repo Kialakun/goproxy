@@ -1,9 +1,9 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/Kialakun/goproxy"
@@ -12,16 +12,14 @@ import (
 
 var PORT = os.Getenv("PORT")
 
-func CMD() {
+func main() {
 	log.SetFormatter(&log.TextFormatter{ForceColors: true})
-
-	var port string
-	flag.StringVar(&port, "port", "8888", "Proxy listen port")
-	var rate int
-	flag.IntVar(&rate, "rate", 512*1024, "Proxy bandwidth ratelimit")
-
-	flag.Parse()
-
+	rate, err := strconv.Atoi(os.Getenv("RATE_LIMIT"))
+	if err != nil {
+		description := "ERROR"
+		log.WithFields(log.Fields{"Message": "no rate limit specified, setting rate limit to 10MB/s"}).Info(description)
+		rate = 10000 * 1024 // 10 MB/s
+	}
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	go goproxy.Listen(PORT, rate, shutdown)
