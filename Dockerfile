@@ -2,6 +2,6 @@ FROM gcr.io/distroless/static
 
 COPY ./build/server /app/server
 
-ENV PORT 443
+ENV PORT 8080
 
 CMD [ "/app/server" ]
