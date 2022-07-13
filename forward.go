@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"code.cloudfoundry.org/bytefmt"
@@ -129,6 +128,7 @@ func Listen(port string, rate int, shutdown <-chan os.Signal) {
 
 			if r.Method == http.MethodConnect {
 				handleTunneling(w, r, bucket)
+				log.WithFields(log.Fields{"Message": "Not handling CONNECT"})
 			} else {
 				handleHTTP(w, r, bucket)
 			}
@@ -144,22 +144,4 @@ func Listen(port string, rate int, shutdown <-chan os.Signal) {
 	log.Info("Goforward Exiting")
 
 	server.Shutdown(context.Background())
-}
-
-func CloudFunctionProxyHandler(w http.ResponseWriter, r *http.Request) {
-	log.WithFields(log.Fields{"Method": r.Method, "RemoteAddr": r.RemoteAddr}).Info(r.RequestURI)
-
-	rate, err := strconv.Atoi(os.Getenv("RATE_LIMIT"))
-	if err != nil {
-		description := "ERROR"
-		log.WithFields(log.Fields{"Message": err, "Default": "setting rate limit to 10MB/s"}).Info(description)
-		rate = 10000 * 1024
-	}
-	bucket := ratelimit.NewBucketWithRate(float64(rate), int64(rate))
-
-	if r.Method == http.MethodConnect {
-		handleTunneling(w, r, bucket)
-	} else {
-		handleHTTP(w, r, bucket)
-	}
 }
