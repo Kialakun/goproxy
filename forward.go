@@ -34,8 +34,8 @@ func (wrap RateLimitedConn) Write(b []byte) (n int, err error) {
 }
 
 func handleTunneling(w http.ResponseWriter, r *http.Request, bucket *ratelimit.Bucket) {
-	conn, err := net.DialTimeout("tcp", r.Host, 10*time.Second)
-
+	dialer := &net.Dialer{KeepAlive: 2 * time.Hour, Timeout: 10 * time.Second} // enable KeepAlive
+	conn, err := dialer.Dial("tcp", r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		return
@@ -117,7 +117,7 @@ func copyHeader(dst, src http.Header) {
 }
 
 func Listen(port string, rate int, shutdown <-chan os.Signal) {
-	log.Info("Goforward listening on :" + port + " with ratelimit " + bytefmt.ByteSize(uint64(rate)))
+	log.Info("proxy listening on :" + port + " with ratelimit " + bytefmt.ByteSize(uint64(rate)))
 
 	bucket := ratelimit.NewBucketWithRate(float64(rate), int64(rate))
 
@@ -141,7 +141,7 @@ func Listen(port string, rate int, shutdown <-chan os.Signal) {
 
 	<-shutdown
 
-	log.Info("Goforward Exiting")
+	log.Info("Exiting")
 
 	server.Shutdown(context.Background())
 }
