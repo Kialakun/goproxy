@@ -23,5 +23,7 @@ func main() {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	go goproxy.Listen(PORT, rate, shutdown)
-	<-shutdown
+	sig := <-shutdown
+	log.Info("OS Signal received: ", sig)
+	log.Info("System Exit.")
 }

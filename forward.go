@@ -139,8 +139,9 @@ func Listen(port string, rate int, shutdown <-chan os.Signal) {
 
 	go server.ListenAndServe()
 
-	<-shutdown
+	sig := <-shutdown
 
+	log.Info("OS Signal received: ", sig)
 	log.Info("Exiting")
 
 	server.Shutdown(context.Background())
