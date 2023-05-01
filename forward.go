@@ -34,7 +34,7 @@ func (wrap RateLimitedConn) Write(b []byte) (n int, err error) {
 }
 
 func handleTunneling(w http.ResponseWriter, r *http.Request, bucket *ratelimit.Bucket) {
-	dialer := &net.Dialer{KeepAlive: 2 * time.Hour, Timeout: 10 * time.Second} // enable KeepAlive
+	dialer := &net.Dialer{KeepAlive: 30 * time.Minute, Timeout: 10 * time.Second} // enable KeepAlive
 	conn, err := dialer.Dial("tcp", r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -86,7 +86,7 @@ func handleHTTP(w http.ResponseWriter, req *http.Request, bucket *ratelimit.Buck
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			dialer := &net.Dialer{
 				Timeout:   3 * time.Second,
-				KeepAlive: 3 * time.Second,
+				KeepAlive: 30 * time.Minute,
 				DualStack: true,
 			}
 			conn, err := dialer.DialContext(ctx, network, addr)
