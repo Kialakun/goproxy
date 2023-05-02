@@ -21,7 +21,7 @@ func main() {
 		rate = 10000 * 1024 // 10 MB/s
 	}
 	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(shutdown, syscall.SIGINT)
 	go goproxy.Listen(PORT, rate, shutdown)
 	sig := <-shutdown
 	log.Info("OS Signal received: ", sig)
